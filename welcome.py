@@ -12,34 +12,86 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-from flask import Flask, jsonify
+
+from flask import Flask, render_template, request, jsonify
+
+import json
+from watson_developer_cloud import DiscoveryV1
+from werkzeug.utils import secure_filename
+
+
+UPLOAD_FOLDER = '/home/neha/Documents/uploads'
 
 app = Flask(__name__)
+app._static_folder = '/home/neha/PycharmProjects/Pearson-Api/static'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/')
-def Welcome():
-    return app.send_static_file('index.html')
+discovery = DiscoveryV1(
+    '2016-11-07',
+    username='5f10f086-cd37-4386-bffe-f4e829e589a8',
+    password='crMQG1F3jQuR')
 
-@app.route('/myapp')
-def WelcomeToMyapp():
-    return 'Welcome again to my app running on Bluemix!'
+environments = discovery.get_environments()
+print(environments)
 
-@app.route('/api/people')
-def GetPeople():
-    list = [
-        {'name': 'John', 'age': 28},
-        {'name': 'Bill', 'val': 26}
-    ]
-    return jsonify(results=list)
+my_environment = [x for x in environments['environments'] if x['name'] == 'byod']
+environment_id = my_environment[0]['environment_id']
+print(environment_id)
 
-@app.route('/api/people/<name>')
-def SayHello(name):
-    message = {
-        'message': 'Hello ' + name
-    }
-    return jsonify(results=message)
+
+#####################  COLLECTION ID  FOR EDU DCOS ##################
+collections = discovery.list_collections(environment_id)
+doc_collection = [x for x in collections['collections'] if x['name'] == 'pearson-api']
+doc_collection_id = doc_collection[0]['collection_id']
+print(doc_collection_id)
+#4ee23389-04fa-4ecf-9811-957bcecb19b4
+
+configuration_id = discovery.get_default_configuration_id(environment_id=environment_id)
+print(configuration_id)
+
+# api_endpoint = "https://gateway.watsonplatform.net/discovery/api/v1"
+username = '5f10f086-cd37-4386-bffe-f4e829e589a8'
+password = 'crMQG1F3jQuR'
+document_id_list =[]
+
+@app.route("/")
+def main():
+    return render_template('document-upload.html')
+
+
+@app.route("/upload", methods=['POST'])
+def upload_document():
+    # path = "/home/neha/Documents/pearson_data/Grade_3_Math_Learning_Objects/5118119/division.pdf"
+    f = request.files['filename']
+    path = "/home/neha/Documents/pearson_data/Grade_3_Math_Learning_Objects/5118119/" + str(secure_filename(f.filename))
+    with open(path) as fileinfo:
+        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
+    d = json.dumps(add_doc, indent=2)
+    print(d)
+    document_id_list.append(add_doc['document_id'][0])
+    print(document_id_list[0])
+    return 'file uploaded successfully'
+
+@app.route("/getmetaData", methods=['GET'])
+def get_document():
+    qopts = {'query': ''}
+    my_query = discovery.query(environment_id, doc_collection_id, qopts)
+
+    json_it = jsonify(my_query)
+    print(type(json_it))
+    # return render_template("Json-Result.html", data=json_it)
+    return json_it
+
+
+@app.route("/delete_document", methods=['GET'])
+def delete_document():
+     for document_id in document_id_list:
+        delete_doc = discovery.delete_document(environment_id, doc_collection_id, document_id)
+        print(json.dumps(delete_doc, indent=2))
+        return json.dumps(delete_doc, indent=2)
+
 
 port = os.getenv('PORT', '5000')
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=int(port))
+
