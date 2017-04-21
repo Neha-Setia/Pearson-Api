@@ -65,12 +65,6 @@ def upload_document():
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-#    with open(url_for('uploaded_file',filename=filename)+filename) as fileinfo:
-#        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
-#    d = json.dumps(add_doc, indent=2)
-#    print(d)
-#    document_id_list.append(add_doc['document_id'][0])
-#    print(document_id_list[0])
     return 'file uploaded successfully'
 
 @app.route("/getmetaData", methods=['GET'])
@@ -95,4 +89,11 @@ def delete_document():
 port = os.getenv('PORT', '5000')
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=int(port))
+	
+#    with open(url_for('uploaded_file',filename=filename)+filename) as fileinfo:
+#        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
+#    d = json.dumps(add_doc, indent=2)
+#    print(d)
+#    document_id_list.append(add_doc['document_id'][0])
+#    print(document_id_list[0])
 
