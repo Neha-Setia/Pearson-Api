@@ -65,7 +65,7 @@ def upload_document():
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-    with open(url_for('uploaded_file',filename=filename)) as fileinfo:
+    with open(url_for('uploaded_file',filename=filename)+filename) as fileinfo:
         add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
     d = json.dumps(add_doc, indent=2)
     print(d)
