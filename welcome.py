@@ -13,17 +13,17 @@
 # limitations under the License.
 
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
-import json
+import json,os
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
 
 
-UPLOAD_FOLDER = '/home/neha/Documents/uploads'
+UPLOAD_FOLDER = './uploads'
 
 app = Flask(__name__)
-app._static_folder = '/home/neha/PycharmProjects/Pearson-Api/static'
+app._static_folder = './static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 discovery = DiscoveryV1(
@@ -62,9 +62,10 @@ def main():
 @app.route("/upload", methods=['POST'])
 def upload_document():
     # path = "/home/neha/Documents/pearson_data/Grade_3_Math_Learning_Objects/5118119/division.pdf"
-    f = request.files['filename']
-    path = "/home/neha/Documents/pearson_data/Grade_3_Math_Learning_Objects/5118119/" + str(secure_filename(f.filename))
-    with open(path) as fileinfo:
+    file = request.files['filename']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+    with open(url_for('uploaded_file',filename=filename)) as fileinfo:
         add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
     d = json.dumps(add_doc, indent=2)
     print(d)
