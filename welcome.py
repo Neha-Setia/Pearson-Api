@@ -60,10 +60,12 @@ def main():
 
 @app.route("/upload", methods=['POST'])
 def upload_document():
-    # path = "/home/neha/Documents/pearson_data/Grade_3_Math_Learning_Objects/5118119/division.pdf"
     file = request.files['filename']
+    print("after request read file")
     filename = secure_filename(file.filename)
+    print(filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    print("file is saved")
     print(app.config['UPLOAD_FOLDER'])
     with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as fileinfo:
         add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
