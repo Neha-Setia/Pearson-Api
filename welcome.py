@@ -61,7 +61,7 @@ def main():
 @app.route("/upload", methods=['POST'])
 def upload_document():
     file = request.files['filename']
-    print(file)
+    print(request.files)
     print("after request read file")
     filename = secure_filename(file.filename)
     print(filename)
