@@ -63,18 +63,18 @@ def upload_document():
     file = request.files['filename']
     print(request.files)
     print("after request read file")
-    filename = secure_filename(file.filename)
-    print(filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    print("file is saved")
-    print(app.config['UPLOAD_FOLDER'])
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as fileinfo:
-        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
-        d = json.dumps(add_doc, indent=2)
-        print(d)
-        document_id_list.append(add_doc['document_id'][0])
-        print(document_id_list[0])
-        return 'file uploaded successfully'
+#    filename = secure_filename(file.filename)
+#    print(filename)
+#    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#    print("file is saved")
+#    print(app.config['UPLOAD_FOLDER'])
+#    with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as fileinfo:
+    add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=file)
+    d = json.dumps(add_doc, indent=2)
+    print(d)
+    document_id_list.append(add_doc['document_id'][0])
+    print(document_id_list[0])
+    return 'file uploaded successfully'
 
 @app.route("/getmetaData", methods=['GET'])
 def get_document():
