@@ -15,7 +15,7 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
-import json, os, pymongo, ssl
+import json, os, pymongo, ssl, pandas as pd
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
 from sklearn.metrics.pairwise import cosine_similarity
@@ -121,9 +121,11 @@ def upload_document():
             comb.append([instruction_id, cosine_score])
             print(instruction_id)
             print(cosine_score)
+            df = pd.DataFrame(comb)
+            print df
+    return render_template("result.html", tables=[df.to_html(classes='table', index=False)])
 
 
-    return "FILE UPLOADED SUCCESSFULLY"
 
 
 @app.route("/getmetaData", methods=['GET'])
