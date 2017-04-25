@@ -18,6 +18,8 @@ from flask import Flask, render_template, request, jsonify, url_for, send_from_d
 import json,os,pymongo
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 MONGODB_URL = "mongodb://admin:DFBRISRYRDWHRYWP@bluemix-sandbox-dal-9-portal.7.dblayer.com:25934,bluemix-sandbox-dal-9-portal.6.dblayer.com:25934/admin?ssl=true"
 # MONGODB_URL = os.environ.get('MONGODB_URL')
@@ -119,7 +121,7 @@ def upload_document():
 	        comb.append([instruction_id, cosine_score])
 	        print(instruction_id)
 	        print(cosine_score)
-    return comb
+    return "FILE UPLOADED SUCCESSFULLY"
 
 @app.route("/getmetaData", methods=['GET'])
 def get_document():
