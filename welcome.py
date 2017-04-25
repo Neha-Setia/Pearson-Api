@@ -15,9 +15,17 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
-import json,os
+import json,os,pymongo
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
+
+MONGODB_URL = "mongodb://admin:DFBRISRYRDWHRYWP@bluemix-sandbox-dal-9-portal.7.dblayer.com:25934,bluemix-sandbox-dal-9-portal.6.dblayer.com:25934/admin?ssl=true"
+# MONGODB_URL = os.environ.get('MONGODB_URL')
+
+client = pymongo.MongoClient(MONGODB_URL, ssl_cert_reqs=ssl.CERT_NONE)
+print(client)
+db = client.discovery_db
+coll = db.Pearsons_maths_dictionary
 
 
 UPLOAD_FOLDER = './uploads'
@@ -63,18 +71,55 @@ def upload_document():
     file = request.files['filename']
     print(request.files)
     print("after request read file")
-#    filename = secure_filename(file.filename)
-#    print(filename)
-#    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#    print("file is saved")
-#    print(app.config['UPLOAD_FOLDER'])
-#    with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as fileinfo:
     add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=file)
     d = json.dumps(add_doc, indent=2)
     print(d)
     document_id_list.append(add_doc['document_id'][0])
     print(document_id_list[0])
-    return 'file uploaded successfully'
+
+    qopts = {'query': ''}
+	my_query = discovery.query(environment_id, doc_collection_id, qopts)
+	print(my_query)
+	
+	# data = [q['enriched_text'] for q in my_query['results']]
+	data = my_query['results'][0]['enriched_text']
+	print(data)
+	data = [q['text'] for q in data['keywords']]
+	print(data)
+	data = ' '.join([str(item) for item in data])
+	print(data)
+	
+	cursor_cl = coll.find({"class_name": "Class 3", "subject_name": "Mathematics"})
+	print(cursor_cl)
+	# # ---->
+	comb = []
+	myList = []
+	print(cursor_cl.count())
+	conc_weightage = cursor_cl.count()
+	if conc_weightage > 0:
+	    for selected_content_db in cursor_cl:
+	        match1 = []
+	        part_kw1 = selected_content_db['keywords'].split(",")
+	        instruction_id = selected_content_db['sctid']
+	        filt_semi_kw1 = [let.encode('utf-8') for let in part_kw1]
+	        contend = ' '.join(filt_semi_kw1)
+	        print(contend)
+	        train_set = [contend, data]
+	        print(train_set)
+	        tfidf_vectorizer = TfidfVectorizer()
+	        tfidf_matrix_train = tfidf_vectorizer.fit_transform(train_set)
+	        cosine_score = cosine_similarity(tfidf_matrix_train)
+	        cosine_score = cosine_score.tolist()
+	        print(cosine_score)
+	        cosine_score = cosine_score[0]
+	        cosine_score = cosine_score[1]
+	        parser_iddetails = instruction_id
+	        parser_score = cosine_score
+	        myList.append(cosine_score)
+	        comb.append([instruction_id, cosine_score])
+	        print(instruction_id)
+	        print(cosine_score)
+    return comb
 
 @app.route("/getmetaData", methods=['GET'])
 def get_document():
