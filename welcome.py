@@ -15,7 +15,7 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
-import json, os, pymongo,ssl
+import json, os, pymongo, ssl
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
 from sklearn.metrics.pairwise import cosine_similarity
