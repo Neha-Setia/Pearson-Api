@@ -1,12 +1,70 @@
+
 <!DOCTYPE html>
-<html lang="en">
-   <body>
+<html>
+<body>
 
-      <form action = "upload" method = "POST"
-         enctype = "multipart/form-data">
-         <input type = "file" name = "filename" />
-         <input type = "submit"/>
-      </form>
+<h3>A demonstration of how to access a File Upload Button</h3>
 
-   </body>
+<input type="file" id="myFile" onchange="/*globals r xhr*/
+/*eslint-disable no-native-reassign */
+handleFileSelect()">
+
+<script>
+
+
+function handleFileSelect() {
+
+                                alert("inside the func");
+                                var file=document.querySelector('input[type=file]').files[0];
+                                alert(file);
+                                var reader  = new FileReader();
+                                alert('reader object formed ');
+                                reader.onloadend = function () {
+                                              var text = reader.result;
+                                              var data = {"data":text};
+                               			      alert("data");
+                                			  alert(data);
+                                              alert(text);
+                                              alert("wow");
+                                              var myJSON = JSON.stringify(data);
+                                              alert(myJSON);
+                               				  xhr.send(myJSON);
+                                           }
+                                r = reader.readAsDataURL(file);
+                                alert(r);
+
+                                xhr = new XMLHttpRequest();
+                                var url = "http://0.0.0.0:5000/upload";
+                                xhr.open("POST", url, true);
+                                xhr.setRequestHeader("Content-type", "application/json");
+                                xhr.onreadystatechange = function () {
+                                  if (xhr.readyState == 4 && xhr.status == 200) {
+                                    var json = JSON.parse(xhr.responseText);
+                                    alert("jsonify");
+                                  }
+                                }
+
+                             alert("before");
+
+                                }
+
+</script>
+
+</body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

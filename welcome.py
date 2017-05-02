@@ -15,9 +15,10 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
-import json, os, pymongo, ssl, pandas as pd
+import json,os,pymongo,ssl
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
+import base64, pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -30,6 +31,7 @@ db = client.discovery_db
 coll = db.Pearsons_maths_dictionary
 
 UPLOAD_FOLDER = './uploads'
+
 
 app = Flask(__name__)
 app._static_folder = './static'
@@ -47,12 +49,13 @@ my_environment = [x for x in environments['environments'] if x['name'] == 'byod'
 environment_id = my_environment[0]['environment_id']
 print(environment_id)
 
+
 #####################  COLLECTION ID  FOR EDU DCOS ##################
 collections = discovery.list_collections(environment_id)
 doc_collection = [x for x in collections['collections'] if x['name'] == 'pearson-api']
 doc_collection_id = doc_collection[0]['collection_id']
 print(doc_collection_id)
-# 4ee23389-04fa-4ecf-9811-957bcecb19b4
+#4ee23389-04fa-4ecf-9811-957bcecb19b4
 
 configuration_id = discovery.get_default_configuration_id(environment_id=environment_id)
 print(configuration_id)
@@ -60,8 +63,20 @@ print(configuration_id)
 # api_endpoint = "https://gateway.watsonplatform.net/discovery/api/v1"
 username = '5f10f086-cd37-4386-bffe-f4e829e589a8'
 password = 'crMQG1F3jQuR'
-document_id_list = []
+document_id_list =[]
 
+
+def decode_base64(data):
+    """Decode base64, padding being optional.
+
+    :param data: Base64 data as an ASCII byte string
+    :returns: The decoded byte string.
+
+    """
+    missing_padding = len(data) % 4
+    if missing_padding != 0:
+        data += b'=' * (4 - missing_padding)
+    return base64.b64decode(data)
 
 @app.route("/")
 def main():
@@ -70,15 +85,26 @@ def main():
 
 @app.route("/upload", methods=['POST'])
 def upload_document():
-    file = request.files['filename']
-    print(request.files)
-    print("after request read file")
-    add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=file)
-    d = json.dumps(add_doc, indent=2)
-    print(d)
-    document_id_list.append(add_doc['document_id'][0])
-    print(document_id_list[0])
+    print("upload")
+    print(request)
+    print(request.data)
+    file = request.data
+    file = file.split(',')
+    file = decode_base64(file[1])
+    print(file)
 
+    file_result = open('./uploads/filename1.json', 'wb')  # create a writable file and write the decoding result
+    file_result.write(file)
+
+    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'filename1.json')) as fileinfo:
+        print(fileinfo)
+        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
+        d = json.dumps(add_doc, indent=2)
+        print(d)
+        document_id_list.append(add_doc['document_id'][0])
+        print(document_id_list[0])
+
+    print("hi")
     qopts = {'query': ''}
     my_query = discovery.query(environment_id, doc_collection_id, qopts)
     print(my_query)
@@ -122,11 +148,10 @@ def upload_document():
             print(instruction_id)
             print(cosine_score)
             df = pd.DataFrame(comb)
-            print df
-    return render_template("result.html", tables=[df.to_html(classes='table', index=False)])
+            print(df)
+            render_template('result.html', tables=[df.to_html(classes='table', index=False)])
 
-
-
+    return 'file upload successful'
 
 @app.route("/getmetaData", methods=['GET'])
 def get_document():
@@ -150,6 +175,3 @@ def delete_document():
 port = os.getenv('PORT', '5000')
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(port))
-	
-
-
