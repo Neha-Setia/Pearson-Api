@@ -15,7 +15,11 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 
+<<<<<<< master
 import json,os,pymongo,ssl
+=======
+import json, os, pymongo, ssl, pandas as pd
+>>>>>>> 412a979 yes finallyyy
 from watson_developer_cloud import DiscoveryV1
 from werkzeug.utils import secure_filename
 import base64, pandas as pd
@@ -148,10 +152,20 @@ def upload_document():
             print(instruction_id)
             print(cosine_score)
             df = pd.DataFrame(comb)
+<<<<<<< master
             print(df)
             render_template('result.html', tables=[df.to_html(classes='table', index=False)])
+=======
+            print df
+    return render_template("result.html", tables=[df.to_html(classes='table', index=False)])
+>>>>>>> 412a979 yes finallyyy
 
+<<<<<<< master
     return 'file upload successful'
+=======
+
+
+>>>>>>> 412a979 yes finallyyy
 
 @app.route("/getmetaData", methods=['GET'])
 def get_document():

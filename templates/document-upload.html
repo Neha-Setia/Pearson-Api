@@ -34,7 +34,7 @@ function handleFileSelect() {
                                 alert(r);
 
                                 xhr = new XMLHttpRequest();
-                                var url = "http://0.0.0.0:5000/upload";
+                                var url = "http://pearson-api.mybluemix.net/upload";
                                 xhr.open("POST", url, true);
                                 xhr.setRequestHeader("Content-type", "application/json");
                                 xhr.onreadystatechange = function () {
