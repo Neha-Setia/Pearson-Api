@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import base64, pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
+from werkzeug.datastructures import FileStorage
 
 MONGODB_URL = "mongodb://admin:DFBRISRYRDWHRYWP@bluemix-sandbox-dal-9-portal.7.dblayer.com:25934,bluemix-sandbox-dal-9-portal.6.dblayer.com:25934/admin?ssl=true"
 # MONGODB_URL = os.environ.get('MONGODB_URL')
@@ -74,20 +75,30 @@ def upload_document():
     print(request)
     print(request.data)
     file = request.data
+
     file = file.split(',')
     file = decode_base64(file[1])
     print(file)
+    file1 = FileStorage(stream=file, name="division.pdf")
+    print(file1.stream)
+    # f = file1.filename
+    # print(f)
+    # # file2 = stream.read()
+    # # print(file2)
+    # # file_result = open('./uploads/filename1.json', 'wb')  # create a writable file and write the decoding result
+    # # file_result.write(file)
+    #
+    # # with open(os.path.join(app.config['UPLOAD_FOLDER'], 'filename1.json')) as fileinfo:
+    # #     print(fileinfo)
+    # files=[]
+    # files.append((f, FileStorage(stream=file, filename="division.pdf")))
+    # print(files[0])
 
-    file_result = open('./uploads/filename1.json', 'wb')  # create a writable file and write the decoding result
-    file_result.write(file)
-
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'filename1.json')) as fileinfo:
-        print(fileinfo)
-        add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=fileinfo)
-        d = json.dumps(add_doc, indent=2)
-        print(d)
-        document_id_list.append(add_doc['document_id'][0])
-        print(document_id_list[0])
+    add_doc = discovery.add_document(environment_id, doc_collection_id, file_info=file1)
+    d = json.dumps(add_doc, indent=2)
+    print(d)
+    document_id_list.append(add_doc['document_id'][0])
+    print(document_id_list[0])
 
     print("hi")
     qopts = {'query': ''}
